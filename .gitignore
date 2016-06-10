@@ -1,0 +1,15 @@
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+gl.log
+imgui.ini
+Makefile
+
+*.swp
+.ycm*
+*.log
+*.o
+.DS_Store
+
+bin/
+tags
