@@ -4,8 +4,7 @@ set(NAME my_awesome_project)
 
 project(${NAME})
 
-include_directories(src)
-include_directories(src/imgui)
+include_directories(include)
 
 add_definitions(-std=c++11)
 add_definitions("-Wall")
