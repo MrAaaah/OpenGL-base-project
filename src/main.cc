@@ -79,7 +79,24 @@ int main (int argc, char** argv) {
 
    GLFWwindow * window = init_window("Wahoo", 700, 700, key_callback);
 
-   Sphere sphere(30, 30, 1.5f);
+   Sphere sphere(300, 300, 1.5f);
+
+   ImagePPM texture("ressources/checker.ppm");
+
+   // load texture on the GPU
+   glActiveTexture(GL_TEXTURE0);
+   GLuint texture_id;
+   glGenTextures(1, &texture_id);
+   glBindTexture(GL_TEXTURE_2D, texture_id);
+   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+         GL_LINEAR_MIPMAP_NEAREST);
+   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
+         GL_LINEAR);
+
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, 
+      texture.height, 0, GL_RGB, GL_FLOAT, texture.pixels);
+  
+   glGenerateMipmap(GL_TEXTURE_2D);
 
    // init shaders
    GLuint vs = loadAndCompileShader(GL_VERTEX_SHADER, "src/vs.glsl");
@@ -93,12 +110,18 @@ int main (int argc, char** argv) {
    glBindAttribLocation(shader_program, 2, "uv");
    glLinkProgram(shader_program);
 
+   glUseProgram(shader_program);
    GLint mvp_uniform = glGetUniformLocation(shader_program, "mvp");
+   GLint light_pos_uniform = glGetUniformLocation(shader_program, 
+         "light_pos");
    GLint resolution_uniform = glGetUniformLocation(shader_program, 
          "resolution_window");
+   glUniform1i(glGetUniformLocation(shader_program, "texture_sampler"), 0);
 
    // setup matrices
    Camera camera(window, glm::vec3(4.0f, 3.0f, 4.0f), 80);
+
+   glm::vec3 light_pos(4.0, 4.0, 4.0);
 
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
    float last_time = glfwGetTime(), deltatime = 0;
@@ -116,6 +139,10 @@ int main (int argc, char** argv) {
                ImGuiWindowFlags_AlwaysAutoResize);
          ImGui::Text("Application average \n %.3f ms/frame (%.1f FPS)", 
                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+          ImGui::Image((void*)(intptr_t)texture_id, ImVec2(256, 256), 
+          ImVec2(0,0), ImVec2(1,1), 
+          ImColor(255,255,255,255), ImColor(255,255,255,128));
+ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
          ImGui::End();
       }
 
@@ -145,6 +172,7 @@ int main (int argc, char** argv) {
       glm::mat4 mvp_matrix = camera.get_projection_matrix() * 
          camera.get_view_matrix();// * object.model_matrix;
       glUniformMatrix4fv(mvp_uniform, 1, GL_FALSE, &mvp_matrix[0][0]);
+      glUniform3fv(light_pos_uniform, 1, &light_pos[0]);
       glUniform2f(resolution_uniform, display_w, display_h);
       glBindVertexArray(sphere.vao);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere.vbos[1]);

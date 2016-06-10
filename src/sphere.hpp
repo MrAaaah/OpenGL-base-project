@@ -43,8 +43,8 @@ struct Sphere
             this->interleaved_data[id++] = ny; // ny
             this->interleaved_data[id++] = nz; // nz
 
-            this->interleaved_data[id++] = std::asin(nx) / M_PI + 0.5f; // u
-            this->interleaved_data[id++] = std::asin(nz) / M_PI + 0.5f; // v
+            this->interleaved_data[id++] = std::atan2(nz, nx) / (2.0 * M_PI) + 0.5f; // u
+            this->interleaved_data[id++] = 0.5 - std::asin(ny) / M_PI; // v
          }
       }
       
