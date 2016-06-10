@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(NAME plot)
+set(NAME my_awesome_project)
 
 project(${NAME})
 
@@ -8,7 +8,7 @@ include_directories(src)
 include_directories(src/imgui)
 
 add_definitions(-std=c++11)
- add_definitions("-Wall")
+add_definitions("-Wall")
 
 file(GLOB SOURCE src/*.cc src/imgui/*.cpp)
 

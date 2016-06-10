@@ -17,9 +17,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtc/random.hpp"
 
-#include "imgui/imgui.h"
-#include "imgui_impl_glfw_gl3.hpp"
-
+#include "window.hpp" 
 #include "utils.hpp"
 #include "log.hpp"
 #include "shader.hpp"
@@ -78,50 +76,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 int main (int argc, char** argv) {
    assert(restartGlLog());
-   // start GL context and O/S window using the GLFW helper library
-   if (!glfwInit()) {
-      fprintf(stderr, "ERROR: could not start GLFW3\n");
-      return 1;
-   } 
 
-   // uncomment these lines if on Apple OS X
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-   unsigned width = 700, height = 700;
-   const char * title = "Wahoo";
-   GLFWwindow* window = glfwCreateWindow(width, height, title, NULL, NULL);
-   if (!window) {
-      fprintf(stderr, "ERROR: could not open window with GLFW3\n");
-      glfwTerminate();
-      return 1;
-   }
-   glfwMakeContextCurrent(window);
-
-   // start GLEW extension handler
-   glewExperimental = GL_TRUE;
-   glewInit();
-
-   // Setup ImGui binding
-   ImGui_ImplGlfwGL3_Init(window, true);
-
-   // set keyboard callback
-   glfwSetKeyCallback(window, key_callback);
-
-   int w_width, w_height;
-   glfwGetWindowSize(window, &w_width, &w_height);
-
-   // get version info
-   const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-   const GLubyte* version = glGetString(GL_VERSION); // version as a string
-   printf("Renderer: %s\n", renderer);
-   printf("OpenGL version supported %s\n", version);
-
-   // tell GL to only draw onto a pixel if the shape is closer to the viewer
-   glEnable(GL_DEPTH_TEST); // enable depth-testing
-   glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
+   GLFWwindow * window = init_window("Wahoo", 700, 700, key_callback);
 
    Sphere sphere(30, 30, 1.5f);
 
