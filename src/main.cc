@@ -82,9 +82,8 @@ int main (int argc, char** argv) {
    Sphere sphere(300, 300, 1.5f);
 
    ImagePPM texture("ressources/checker.ppm");
-
+   //
    // load texture on the GPU
-   glActiveTexture(GL_TEXTURE0);
    GLuint texture_id;
    glGenTextures(1, &texture_id);
    glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -98,6 +97,24 @@ int main (int argc, char** argv) {
   
    glGenerateMipmap(GL_TEXTURE_2D);
 
+   // normal map
+   ImagePPM normal_map("ressources/normal_map.ppm");
+   //
+   // load texture on the GPU
+   GLuint normal_map_id;
+   glGenTextures(1, &normal_map_id);
+   glBindTexture(GL_TEXTURE_2D, normal_map_id);
+   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+         GL_LINEAR_MIPMAP_NEAREST);
+   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
+         GL_LINEAR);
+
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, normal_map.width, 
+      normal_map.height, 0, GL_RGB, GL_FLOAT, normal_map.pixels);
+  
+   glGenerateMipmap(GL_TEXTURE_2D);
+
+
    // init shaders
    GLuint vs = loadAndCompileShader(GL_VERTEX_SHADER, "src/vs.glsl");
    GLuint fs = loadAndCompileShader(GL_FRAGMENT_SHADER, "src/fs.glsl");
@@ -107,7 +124,8 @@ int main (int argc, char** argv) {
    glAttachShader(shader_program, vs);
    glBindAttribLocation(shader_program, 0, "position");
    glBindAttribLocation(shader_program, 1, "normal");
-   glBindAttribLocation(shader_program, 2, "uv");
+   glBindAttribLocation(shader_program, 2, "tangent");
+   glBindAttribLocation(shader_program, 3, "uv");
    glLinkProgram(shader_program);
 
    glUseProgram(shader_program);
@@ -117,6 +135,7 @@ int main (int argc, char** argv) {
    GLint resolution_uniform = glGetUniformLocation(shader_program, 
          "resolution_window");
    glUniform1i(glGetUniformLocation(shader_program, "texture_sampler"), 0);
+   glUniform1i(glGetUniformLocation(shader_program, "normal_map_sampler"), 1);
 
    // setup matrices
    Camera camera(window, glm::vec3(4.0f, 3.0f, 4.0f), 80);
@@ -176,6 +195,13 @@ ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
       glUniform2f(resolution_uniform, display_w, display_h);
       glBindVertexArray(sphere.vao);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere.vbos[1]);
+
+      glEnable(GL_TEXTURE_2D);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, texture_id);
+
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, normal_map_id);
 
       glDrawElements(GL_TRIANGLES, sphere.nb_tri * 3, GL_UNSIGNED_INT, (void*)0);
       //
