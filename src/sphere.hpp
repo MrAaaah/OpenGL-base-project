@@ -82,12 +82,12 @@ struct Sphere
             unsigned int second = first + lon_bands + 1;
 
             this->indices[id++] = first;
-            this->indices[id++] = second;
             this->indices[id++] = first + 1;
+            this->indices[id++] = second;
 
             this->indices[id++] = second;
-            this->indices[id++] = second + 1;
             this->indices[id++] = first + 1;
+            this->indices[id++] = second + 1;
          }
       }
 
