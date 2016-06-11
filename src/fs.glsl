@@ -9,6 +9,7 @@ uniform vec3 view_pos;
 uniform vec3 light_pos;
 uniform vec2 resolution_window;
 uniform float height_scale;
+uniform int num_parallax_layers;
 
 in mat3 tbn;
 in vec3 fs_world_pos;
@@ -26,10 +27,21 @@ void main () {
    vec3 v = normalize(tan_view_pos - tan_world_pos);
 
    // parallax mapping
+   float layer_depth = 1.0 / num_parallax_layers;
+   float current_layer_depth = 0.0;
+   vec2 offset = v.xy * height_scale;
+   vec2 delta_uv = offset / num_parallax_layers;
+    
    vec2 uv = vec2(fs_uv.x, fs_uv.y);
-   float height = 1.0 - texture(height_map_sampler, uv).r;
-   vec2 p = v.xy / v.z * (height * height_scale);
-   uv = uv - p;
+   float depth = 1.0 - texture(height_map_sampler, uv).r;
+   //vec2 p = v.xy / v.z * (height * height_scale);
+   while (current_layer_depth < depth)
+   {
+      uv -= delta_uv;
+      depth = 1.0 - texture(height_map_sampler, uv).r;
+      current_layer_depth += layer_depth;
+   }
+   //uv = uv - p;
    
    if (uv.x > 1.0 || uv.y > 1.0 || uv.x < 0.0 || uv.y < 0.0)
       discard;

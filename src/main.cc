@@ -165,6 +165,8 @@ int main (int argc, char** argv) {
          "resolution_window");
    GLint height_scale_uniform = glGetUniformLocation(shader_program,
          "height_scale");
+   GLint num_parallax_uniform = glGetUniformLocation(shader_program,
+         "num_parallax_layers");
    glUniform1i(glGetUniformLocation(shader_program, "texture_sampler"), 0);
    glUniform1i(glGetUniformLocation(shader_program, "normal_map_sampler"), 1);
    glUniform1i(glGetUniformLocation(shader_program, "height_map_sampler"), 2);
@@ -173,7 +175,8 @@ int main (int argc, char** argv) {
    Camera camera(window, glm::vec3(4.0f, 3.0f, 4.0f), 80);
 
    glm::vec3 light_pos(4.0, 4.0, 4.0);
-   float height_scale = 0.05f;
+   float height_scale = 0.30f;
+   int num_parallax_layers = 20;
 
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
    float last_time = glfwGetTime(), deltatime = 0;
@@ -196,6 +199,7 @@ int main (int argc, char** argv) {
                ImColor(255,255,255,255), ImColor(255,255,255,128));
          ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
          ImGui::SliderFloat("Height scale", &height_scale, 0.0, 2.0, "%.3f", 1);
+         ImGui::SliderInt("Num parallax layers", &num_parallax_layers, 1, 50, NULL);
          ImGui::End();
       }
 
@@ -229,6 +233,8 @@ int main (int argc, char** argv) {
       glUniform3fv(light_pos_uniform, 1, &light_pos[0]);
       glUniform2f(resolution_uniform, display_w, display_h);
       glUniform1f(height_scale_uniform, height_scale);
+      glUniform1i(num_parallax_uniform, num_parallax_layers);
+
       glBindVertexArray(sphere.vao);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere.vbos[1]);
 
