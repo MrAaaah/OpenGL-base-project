@@ -87,14 +87,16 @@ int main (int argc, char** argv) {
    GLuint texture_id;
    glGenTextures(1, &texture_id);
    glBindTexture(GL_TEXTURE_2D, texture_id);
-   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-         GL_LINEAR_MIPMAP_NEAREST);
-   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
-         GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+         GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
+         GL_NEAREST);
 
    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, 
-      texture.height, 0, GL_RGB, GL_FLOAT, texture.pixels);
-  
+         texture.height, 0, GL_RGB, GL_FLOAT, texture.pixels);
+
    glGenerateMipmap(GL_TEXTURE_2D);
 
    // normal map
@@ -104,15 +106,19 @@ int main (int argc, char** argv) {
    GLuint normal_map_id;
    glGenTextures(1, &normal_map_id);
    glBindTexture(GL_TEXTURE_2D, normal_map_id);
-   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
          GL_LINEAR_MIPMAP_NEAREST);
-   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
          GL_LINEAR);
 
    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, normal_map.width, 
-      normal_map.height, 0, GL_RGB, GL_FLOAT, normal_map.pixels);
-  
+         normal_map.height, 0, GL_RGB, GL_FLOAT, normal_map.pixels);
+
    glGenerateMipmap(GL_TEXTURE_2D);
+
+   glBindTexture(GL_TEXTURE_2D, 0);
 
 
    // init shaders
@@ -158,10 +164,10 @@ int main (int argc, char** argv) {
                ImGuiWindowFlags_AlwaysAutoResize);
          ImGui::Text("Application average \n %.3f ms/frame (%.1f FPS)", 
                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-          ImGui::Image((void*)(intptr_t)texture_id, ImVec2(256, 256), 
-          ImVec2(0,0), ImVec2(1,1), 
-          ImColor(255,255,255,255), ImColor(255,255,255,128));
-ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
+         ImGui::Image((void*)(intptr_t)texture_id, ImVec2(256, 256), 
+               ImVec2(0,0), ImVec2(1,1), 
+               ImColor(255,255,255,255), ImColor(255,255,255,128));
+         ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
          ImGui::End();
       }
 
