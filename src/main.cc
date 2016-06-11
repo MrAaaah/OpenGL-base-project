@@ -210,6 +210,9 @@ ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
 
       ImGui::Render();
       glfwSwapBuffers(window);
+
+      // animate
+      light_pos = glm::vec3(std::cos(current_time) * 4.0, 4.0, std::sin(current_time) * 4.0);
    }
 
    // close GL context and any other GLFW resources
