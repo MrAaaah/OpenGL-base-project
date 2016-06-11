@@ -90,7 +90,7 @@ int main (int argc, char** argv) {
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-         GL_NEAREST);
+         GL_LINEAR_MIPMAP_NEAREST);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
          GL_NEAREST);
 
@@ -100,7 +100,7 @@ int main (int argc, char** argv) {
    glGenerateMipmap(GL_TEXTURE_2D);
 
    // normal map
-   ImagePPM normal_map("ressources/normal_map.ppm");
+   ImagePPM normal_map("ressources/wave_normal_map.ppm");
    //
    // load texture on the GPU
    GLuint normal_map_id;
