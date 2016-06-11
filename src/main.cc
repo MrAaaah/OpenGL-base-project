@@ -25,6 +25,7 @@
 #include "camera.hpp"
 
 #include "sphere.hpp" 
+#include "plane.hpp" 
 
 #define M_2PI M_PI*2.0f
 #define CAMERA_LEFT_KEY GLFW_KEY_A
@@ -79,7 +80,8 @@ int main (int argc, char** argv) {
 
    GLFWwindow * window = init_window("Wahoo", 700, 700, key_callback);
 
-   Sphere sphere(300, 300, 1.5f);
+   //Sphere sphere(300, 300, 1.5f);
+   Plane sphere;
 
    ImagePPM texture("ressources/checker.ppm");
    //
@@ -118,6 +120,25 @@ int main (int argc, char** argv) {
 
    glGenerateMipmap(GL_TEXTURE_2D);
 
+   // height map
+   ImagePPM height_map("ressources/wave_height_map.ppm");
+   //
+   // load texture on the GPU
+   GLuint height_map_id;
+   glGenTextures(1, &height_map_id);
+   glBindTexture(GL_TEXTURE_2D, height_map_id);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+         GL_LINEAR_MIPMAP_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
+         GL_LINEAR);
+
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, height_map.width, 
+         height_map.height, 0, GL_RGB, GL_FLOAT, height_map.pixels);
+
+   glGenerateMipmap(GL_TEXTURE_2D);
+
    glBindTexture(GL_TEXTURE_2D, 0);
 
 
@@ -136,17 +157,23 @@ int main (int argc, char** argv) {
 
    glUseProgram(shader_program);
    GLint mvp_uniform = glGetUniformLocation(shader_program, "mvp");
+   GLint view_pos_uniform = glGetUniformLocation(shader_program, 
+         "view_pos");
    GLint light_pos_uniform = glGetUniformLocation(shader_program, 
          "light_pos");
    GLint resolution_uniform = glGetUniformLocation(shader_program, 
          "resolution_window");
+   GLint height_scale_uniform = glGetUniformLocation(shader_program,
+         "height_scale");
    glUniform1i(glGetUniformLocation(shader_program, "texture_sampler"), 0);
    glUniform1i(glGetUniformLocation(shader_program, "normal_map_sampler"), 1);
+   glUniform1i(glGetUniformLocation(shader_program, "height_map_sampler"), 2);
 
    // setup matrices
    Camera camera(window, glm::vec3(4.0f, 3.0f, 4.0f), 80);
 
    glm::vec3 light_pos(4.0, 4.0, 4.0);
+   float height_scale = 0.05f;
 
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
    float last_time = glfwGetTime(), deltatime = 0;
@@ -168,6 +195,7 @@ int main (int argc, char** argv) {
                ImVec2(0,0), ImVec2(1,1), 
                ImColor(255,255,255,255), ImColor(255,255,255,128));
          ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
+         ImGui::SliderFloat("Height scale", &height_scale, 0.0, 2.0, "%.3f", 1);
          ImGui::End();
       }
 
@@ -197,8 +225,10 @@ int main (int argc, char** argv) {
       glm::mat4 mvp_matrix = camera.get_projection_matrix() * 
          camera.get_view_matrix();// * object.model_matrix;
       glUniformMatrix4fv(mvp_uniform, 1, GL_FALSE, &mvp_matrix[0][0]);
+      glUniform3fv(view_pos_uniform, 1, &camera.position[0]);
       glUniform3fv(light_pos_uniform, 1, &light_pos[0]);
       glUniform2f(resolution_uniform, display_w, display_h);
+      glUniform1f(height_scale_uniform, height_scale);
       glBindVertexArray(sphere.vao);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere.vbos[1]);
 
@@ -208,6 +238,9 @@ int main (int argc, char** argv) {
 
       glActiveTexture(GL_TEXTURE1);
       glBindTexture(GL_TEXTURE_2D, normal_map_id);
+
+      glActiveTexture(GL_TEXTURE2);
+      glBindTexture(GL_TEXTURE_2D, height_map_id);
 
       glDrawElements(GL_TRIANGLES, sphere.nb_tri * 3, GL_UNSIGNED_INT, (void*)0);
       //
