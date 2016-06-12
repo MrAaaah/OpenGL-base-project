@@ -161,12 +161,16 @@ int main (int argc, char** argv) {
          "view_pos");
    GLint light_pos_uniform = glGetUniformLocation(shader_program, 
          "light_pos");
-   GLint resolution_uniform = glGetUniformLocation(shader_program, 
-         "resolution_window");
+   //GLint resolution_uniform = glGetUniformLocation(shader_program, 
+   //      "resolution_window");
    GLint height_scale_uniform = glGetUniformLocation(shader_program,
          "height_scale");
+   GLint uv_scale_uniform = glGetUniformLocation(shader_program,
+         "uv_scale");
    GLint num_parallax_uniform = glGetUniformLocation(shader_program,
          "num_parallax_layers");
+   GLint interpolation_uniform = glGetUniformLocation(shader_program,
+         "interpolation");
    glUniform1i(glGetUniformLocation(shader_program, "texture_sampler"), 0);
    glUniform1i(glGetUniformLocation(shader_program, "normal_map_sampler"), 1);
    glUniform1i(glGetUniformLocation(shader_program, "height_map_sampler"), 2);
@@ -175,8 +179,10 @@ int main (int argc, char** argv) {
    Camera camera(window, glm::vec3(4.0f, 3.0f, 4.0f), 80);
 
    glm::vec3 light_pos(4.0, 4.0, 4.0);
-   float height_scale = 0.30f;
-   int num_parallax_layers = 20;
+   float height_scale = 0.567f;
+   float uv_scale = 1.0f;
+   int num_parallax_layers = 50;
+   int interpolation = 1;
 
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
    float last_time = glfwGetTime(), deltatime = 0;
@@ -194,12 +200,17 @@ int main (int argc, char** argv) {
                ImGuiWindowFlags_AlwaysAutoResize);
          ImGui::Text("Application average \n %.3f ms/frame (%.1f FPS)", 
                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-         ImGui::Image((void*)(intptr_t)texture_id, ImVec2(256, 256), 
+         ImGui::Image((void*)(intptr_t)texture_id, ImVec2(128, 128), 
+               ImVec2(0,0), ImVec2(1,1), 
+               ImColor(255,255,255,255), ImColor(255,255,255,128));
+         ImGui::Image((void*)(intptr_t)height_map_id, ImVec2(128, 128), 
                ImVec2(0,0), ImVec2(1,1), 
                ImColor(255,255,255,255), ImColor(255,255,255,128));
          ImGui::SliderFloat3("Light position", &light_pos[0], -10.0, 10.0, "%.3f", 1);
          ImGui::SliderFloat("Height scale", &height_scale, 0.0, 2.0, "%.3f", 1);
+         ImGui::SliderFloat("UV scale", &uv_scale, 1.0, 20.0, "%.3f", 1);
          ImGui::SliderInt("Num parallax layers", &num_parallax_layers, 1, 50, NULL);
+         ImGui::SliderInt("Interpolation", &interpolation, 0, 1, NULL);
          ImGui::End();
       }
 
@@ -231,9 +242,11 @@ int main (int argc, char** argv) {
       glUniformMatrix4fv(mvp_uniform, 1, GL_FALSE, &mvp_matrix[0][0]);
       glUniform3fv(view_pos_uniform, 1, &camera.position[0]);
       glUniform3fv(light_pos_uniform, 1, &light_pos[0]);
-      glUniform2f(resolution_uniform, display_w, display_h);
+      //glUniform2f(resolution_uniform, display_w, display_h);
       glUniform1f(height_scale_uniform, height_scale);
+      glUniform1f(uv_scale_uniform, uv_scale);
       glUniform1i(num_parallax_uniform, num_parallax_layers);
+      glUniform1i(interpolation_uniform, interpolation);
 
       glBindVertexArray(sphere.vao);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere.vbos[1]);
@@ -258,6 +271,8 @@ int main (int argc, char** argv) {
 
       // animate
       light_pos = glm::vec3(std::cos(current_time) * 4.0, 4.0, std::sin(current_time) * 4.0);
+
+      height_scale = std::cos(current_time * 9) * 0.2 + 0.3;
    }
 
    // close GL context and any other GLFW resources
