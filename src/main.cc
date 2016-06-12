@@ -7,27 +7,20 @@
 #include <time.h>
 #include <string>
 #include <assert.h>
-#include <complex>
 #include <cmath>
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/gtc/random.hpp>
 
 #include "window.hpp" 
 #include "utils.hpp"
 #include "log.hpp"
 #include "shader.hpp"
-#include "imagePPM.hpp"
+#include "opengl_helpers.hpp"
 #include "camera.hpp"
 
 #include "sphere.hpp" 
 #include "plane.hpp" 
 
-#define M_2PI M_PI*2.0f
 #define CAMERA_LEFT_KEY GLFW_KEY_A
 #define CAMERA_RIGHT_KEY GLFW_KEY_D
 #define CAMERA_FORWARD_KEY GLFW_KEY_W
@@ -83,65 +76,10 @@ int main (int argc, char** argv) {
    //Sphere sphere(300, 300, 1.5f);
    Plane sphere;
 
-   ImagePPM texture("ressources/checker.ppm");
+   GLuint texture_id = ppm_to_gpu_texture("ressources/checker.ppm");
+   GLuint normal_map_id = ppm_to_gpu_texture("ressources/wave_normal_map.ppm");
+   GLuint height_map_id = ppm_to_gpu_texture("ressources/wave_height_map.ppm");
    //
-   // load texture on the GPU
-   GLuint texture_id;
-   glGenTextures(1, &texture_id);
-   glBindTexture(GL_TEXTURE_2D, texture_id);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-         GL_LINEAR_MIPMAP_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
-         GL_NEAREST);
-
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, 
-         texture.height, 0, GL_RGB, GL_FLOAT, texture.pixels);
-
-   glGenerateMipmap(GL_TEXTURE_2D);
-
-   // normal map
-   ImagePPM normal_map("ressources/wave_normal_map.ppm");
-   //
-   // load texture on the GPU
-   GLuint normal_map_id;
-   glGenTextures(1, &normal_map_id);
-   glBindTexture(GL_TEXTURE_2D, normal_map_id);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-         GL_LINEAR_MIPMAP_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
-         GL_LINEAR);
-
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, normal_map.width, 
-         normal_map.height, 0, GL_RGB, GL_FLOAT, normal_map.pixels);
-
-   glGenerateMipmap(GL_TEXTURE_2D);
-
-   // height map
-   ImagePPM height_map("ressources/wave_height_map.ppm");
-   //
-   // load texture on the GPU
-   GLuint height_map_id;
-   glGenTextures(1, &height_map_id);
-   glBindTexture(GL_TEXTURE_2D, height_map_id);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-         GL_LINEAR_MIPMAP_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
-         GL_LINEAR);
-
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, height_map.width, 
-         height_map.height, 0, GL_RGB, GL_FLOAT, height_map.pixels);
-
-   glGenerateMipmap(GL_TEXTURE_2D);
-
-   glBindTexture(GL_TEXTURE_2D, 0);
-
-
    // init shaders
    GLuint vs = loadAndCompileShader(GL_VERTEX_SHADER, "src/vs.glsl");
    GLuint fs = loadAndCompileShader(GL_FRAGMENT_SHADER, "src/fs.glsl");
@@ -262,7 +200,7 @@ int main (int argc, char** argv) {
       glBindTexture(GL_TEXTURE_2D, height_map_id);
 
       glDrawElements(GL_TRIANGLES, sphere.nb_tri * 3, GL_UNSIGNED_INT, (void*)0);
-      //
+      
       //
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
